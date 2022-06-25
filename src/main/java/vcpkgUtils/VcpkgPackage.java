@@ -2,12 +2,12 @@ package vcpkgUtils;
 
 import java.util.Objects;
 
-public class vcpkgPackage {
+public class VcpkgPackage {
     private final String pkgName;
     private final String pkgVersion;
     private final String pkgDescription;
 
-    public vcpkgPackage (String pkgName, String pkgVersion, String pkgDescription) {
+    public VcpkgPackage(String pkgName, String pkgVersion, String pkgDescription) {
         this.pkgName = pkgName;
         this.pkgVersion = pkgVersion;
         this.pkgDescription = pkgDescription;
@@ -38,7 +38,7 @@ public class vcpkgPackage {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        vcpkgPackage that = (vcpkgPackage) o;
+        VcpkgPackage that = (VcpkgPackage) o;
         return getPkgName().equals(that.getPkgName()) && getPkgVersion().equals(that.getPkgVersion()) && Objects.equals(getPkgDescription(), that.getPkgDescription());
     }
 

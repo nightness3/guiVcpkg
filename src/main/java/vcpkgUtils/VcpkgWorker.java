@@ -2,12 +2,11 @@ package vcpkgUtils;
 
 import java.util.HashSet;
 
-public class vcpkgWorker {
-    private HashSet<vcpkgPackage> setOfInstalledPackages;
-    private HashSet<vcpkgPackage> setOfAllPackages;
-    private String path;
+public class VcpkgWorker {
+    private HashSet<VcpkgPackage> setOfInstalledPackages;
+    private HashSet<VcpkgPackage> setOfAllPackages;
 
-    public vcpkgWorker() {
+    public VcpkgWorker() {
         this.setOfInstalledPackages = new HashSet<>();
         this.setOfAllPackages = new HashSet<>();
     }
@@ -20,11 +19,11 @@ public class vcpkgWorker {
 
     }
 
-    public HashSet<vcpkgPackage> getSetOfInstalledPackages() {
+    public HashSet<VcpkgPackage> getSetOfInstalledPackages() {
         return new HashSet<>();
     }
 
-    public HashSet<vcpkgPackage> getSetOfAllPackages() {
+    public HashSet<VcpkgPackage> getSetOfAllPackages() {
         return new HashSet<>();
     }
 

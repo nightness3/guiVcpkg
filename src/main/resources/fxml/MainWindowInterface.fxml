@@ -7,34 +7,36 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #efefef;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainWindowController">
+<AnchorPane fx:id="mainWindowPane" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #efefef;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainWindowController">
    <children>
-      <TabPane layoutX="470.0" layoutY="59.0" prefHeight="482.0" prefWidth="315.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #BABABA;" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="100.0" tabMaxWidth="1.797693101348623E308" tabMinWidth="50.0">
+      <TabPane fx:id="choosePackagesTab" layoutX="470.0" layoutY="59.0" prefHeight="440.0" prefWidth="315.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #BABABA;" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="100.0" tabMaxWidth="1.797693101348623E308" tabMinWidth="50.0">
         <tabs>
-          <Tab style="-fx-font-size: 18;" text="Installed">
+          <Tab fx:id="installedPackagesTab" style="-fx-font-size: 18;" text="Installed">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="298.0" />
             </content>
           </Tab>
-          <Tab style="-fx-font-size: 18;" text="All">
+          <Tab fx:id="allPackagesTab" style="-fx-font-size: 18;" text="All">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="449.0" prefWidth="373.0" />
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="379.0" prefWidth="313.0" />
             </content>
           </Tab>
         </tabs>
       </TabPane>
-      <TextArea layoutX="12.0" layoutY="316.0" prefHeight="269.0" prefWidth="444.0" />
-      <TextField layoutX="471.0" layoutY="10.0" prefHeight="40.0" prefWidth="210.0">
+      <TextArea fx:id="logTextArea" layoutX="12.0" layoutY="314.0" prefHeight="272.0" prefWidth="444.0" />
+      <TextField fx:id="searchInputTextField" layoutX="471.0" layoutY="10.0" prefHeight="40.0" prefWidth="210.0">
          <font>
             <Font size="18.0" />
          </font>
       </TextField>
-      <Button layoutX="694.0" layoutY="10.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="90.0" style="-fx-font-size: 18;" text="Search" />
-      <Label alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="12.0" layoutY="10.0" prefHeight="30.0" prefWidth="444.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 100; -fx-border-color: #BABABA; -fx-border-radius: 100;" textOverrun="CLIP" wrapText="true">
+      <Button fx:id="searchButton" layoutX="694.0" layoutY="10.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="90.0" style="-fx-font-size: 18;" text="Search" />
+      <Label fx:id="nameLabel" alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="12.0" layoutY="10.0" prefHeight="30.0" prefWidth="444.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 100; -fx-border-color: #BABABA; -fx-border-radius: 100;" textOverrun="CLIP" wrapText="true">
          <font>
             <Font size="18.0" />
          </font>
@@ -42,7 +44,7 @@
             <Tooltip text="Name" />
          </tooltip>
       </Label>
-      <Label alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="12.0" layoutY="46.0" prefHeight="30.0" prefWidth="444.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 100; -fx-border-color: #BABABA; -fx-border-radius: 100;" textOverrun="CLIP" wrapText="true">
+      <Label fx:id="versionLabel" alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="12.0" layoutY="46.0" prefHeight="30.0" prefWidth="444.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 100; -fx-border-color: #BABABA; -fx-border-radius: 100;" textOverrun="CLIP" wrapText="true">
          <font>
             <Font size="18.0" />
          </font>
@@ -50,7 +52,7 @@
             <Tooltip text="Version" />
          </tooltip>
       </Label>
-      <Label alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="12.0" layoutY="84.0" prefHeight="127.0" prefWidth="444.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #BABABA; -fx-border-radius: 10;" textOverrun="CLIP" wrapText="true">
+      <Label fx:id="descriptionLabel" alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="12.0" layoutY="84.0" prefHeight="127.0" prefWidth="444.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #BABABA; -fx-border-radius: 10;" textOverrun="CLIP" wrapText="true">
          <font>
             <Font size="18.0" />
          </font>
@@ -58,13 +60,27 @@
             <Tooltip text="Description" />
          </tooltip>
       </Label>
-      <Label alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="56.0" layoutY="275.0" prefHeight="40.0" prefWidth="360.0" text="Status" textOverrun="CLIP" wrapText="true">
+      <Label fx:id="statusLabel" alignment="CENTER" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="56.0" layoutY="267.0" prefHeight="40.0" prefWidth="360.0" text="Status" textOverrun="CLIP" wrapText="true">
          <font>
             <Font size="18.0" />
          </font>
       </Label>
-      <Button layoutX="15.0" layoutY="220.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="211.0" style="-fx-font-size: 18;" text="Install" />
-      <Button layoutX="242.0" layoutY="220.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="213.0" style="-fx-font-size: 18;" text="Remove" />
-      <Button layoutX="470.0" layoutY="545.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="314.0" style="-fx-font-size: 18;" text="Refresh" />
+      <Button fx:id="installButton" layoutX="15.0" layoutY="220.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="211.0" style="-fx-font-size: 18;" text="Install" />
+      <Button fx:id="removeButton" layoutX="242.0" layoutY="220.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="213.0" style="-fx-font-size: 18;" text="Remove" />
+      <Button fx:id="refreshButton" layoutX="470.0" layoutY="505.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="315.0" style="-fx-font-size: 18;" text="Refresh" />
+      <Button fx:id="chooseVcpkgButton" layoutX="736.0" layoutY="552.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="49.0">
+         <graphic>
+            <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/folder_icon.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <TextField fx:id="pathInputTextField" layoutX="471.0" layoutY="552.0" prefHeight="40.0" prefWidth="255.0">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </TextField>
    </children>
 </AnchorPane>
