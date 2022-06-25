@@ -3,7 +3,6 @@ package vcpkgUtils;
 import java.util.HashSet;
 
 public class vcpkgWorker {
-
     private HashSet<vcpkgPackage> setOfInstalledPackages;
     private HashSet<vcpkgPackage> setOfAllPackages;
     private String path;
@@ -32,5 +31,4 @@ public class vcpkgWorker {
     public void refreshSetsOfPackages() {
 
     }
-
 }

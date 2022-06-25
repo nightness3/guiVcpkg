@@ -3,7 +3,6 @@ package vcpkgUtils;
 import java.util.Objects;
 
 public class vcpkgPackage {
-
     private final String pkgName;
     private final String pkgVersion;
     private final String pkgDescription;
