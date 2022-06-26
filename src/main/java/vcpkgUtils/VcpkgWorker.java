@@ -1,6 +1,8 @@
 package vcpkgUtils;
 
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.paint.Color;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +19,7 @@ public class VcpkgWorker {
         this.packageWorker = new PackageWorker();
     }
 
-    public void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+    public void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea, Label statusLabel) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         try {
             Process installPackageProcess = new ProcessBuilder().command(pathToVcpkg, "install", vcpkgPackage.getPkgName()).start();
@@ -29,11 +31,12 @@ public class VcpkgWorker {
                 logTextArea.appendText("\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            statusLabel.setTextFill(Color.RED);
+            statusLabel.setText("Error when working (install) with vcpkg");
         }
     }
 
-    public void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+    public void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea, Label statusLabel) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         try {
             Process installPackageProcess = new ProcessBuilder().command(pathToVcpkg, "remove", vcpkgPackage.getPkgName(), "--recurse").start();
@@ -45,11 +48,12 @@ public class VcpkgWorker {
                 logTextArea.appendText("\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            statusLabel.setTextFill(Color.RED);
+            statusLabel.setText("Error when working (remove) with vcpkg");
         }
     }
 
-    public ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine) {
+    public ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine, Label statusLabel) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         ArrayList<VcpkgPackage> listOfPackages = new ArrayList<>();
         try {
@@ -57,12 +61,13 @@ public class VcpkgWorker {
             ArrayList<String> listOfLinesFromOutput = processWorker.wrapProcessOutput(getInstalledPackagesProcess);
             listOfPackages = packageWorker.listToSetOfPackages(listOfLinesFromOutput, 65);
         } catch (IOException e) {
-            //TODO: Error dialog
+            statusLabel.setTextFill(Color.RED);
+            statusLabel.setText("Error when working (search) with vcpkg");
         }
         return listOfPackages;
     }
 
-    public ArrayList<VcpkgPackage> searchInAllPackages(String searchLine) {
+    public ArrayList<VcpkgPackage> searchInAllPackages(String searchLine, Label statusLabel) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         ArrayList<VcpkgPackage> listOfPackages = new ArrayList<>();
         try {
@@ -71,7 +76,8 @@ public class VcpkgWorker {
             listOfLinesFromOutput.remove(listOfLinesFromOutput.size()-1);
             listOfPackages = packageWorker.listToSetOfPackages(listOfLinesFromOutput, 40);
         } catch (IOException | ArrayIndexOutOfBoundsException e) {
-            //TODO: Error dialog
+            statusLabel.setTextFill(Color.RED);
+            statusLabel.setText("Error when working (search) with vcpkg");
         }
         return listOfPackages;
     }

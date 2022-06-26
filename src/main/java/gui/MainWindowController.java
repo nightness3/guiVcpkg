@@ -167,14 +167,17 @@ public class MainWindowController implements Initializable {
                     installTask.setOnSucceeded(successEvent -> {
                         statusLabel.setTextFill(Color.GREEN);
                         statusLabel.setText("INSTALLED");
+                        switchInstallAndRemoveButtons();
                     });
                     installTask.setOnCancelled(cancelEvent -> {
                         statusLabel.setTextFill(Color.BLUE);
                         statusLabel.setText("CANCELED");
+                        switchInstallAndRemoveButtons();
                     });
                     installTask.setOnFailed(failEvent -> {
                         statusLabel.setTextFill(Color.RED);
                         statusLabel.setText("FAILED");
+                        switchInstallAndRemoveButtons();
                     });
                     installTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
                     executorService.submit(installTask);
@@ -199,14 +202,17 @@ public class MainWindowController implements Initializable {
                     removeTask.setOnSucceeded(successEvent -> {
                         statusLabel.setTextFill(Color.GREEN);
                         statusLabel.setText("REMOVED");
+                        switchInstallAndRemoveButtons();
                     });
                     removeTask.setOnCancelled(cancelEvent -> {
                         statusLabel.setTextFill(Color.BLUE);
                         statusLabel.setText("CANCELED");
+                        switchInstallAndRemoveButtons();
                     });
                     removeTask.setOnFailed(failEvent -> {
                         statusLabel.setTextFill(Color.RED);
                         statusLabel.setText("FAILED");
+                        switchInstallAndRemoveButtons();
                     });
                     removeTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
                     ExecutorService executorService
@@ -228,6 +234,16 @@ public class MainWindowController implements Initializable {
         table.setItems(observableListOfPackages);
     }
 
+    private synchronized void switchInstallAndRemoveButtons() {
+        if (installButton.isDisabled() && removeButton.isDisabled()) {
+            installButton.setDisable(false);
+            removeButton.setDisable(false);
+        } else {
+            installButton.setDisable(true);
+            removeButton.setDisable(true);
+        }
+    }
+
     public class InstallTask extends Task<Void> {
         private final VcpkgPackage vcpkgPackage;
         private final TextArea logTextArea;
@@ -239,11 +255,8 @@ public class MainWindowController implements Initializable {
 
         @Override
         protected Void call() {
-            installButton.setDisable(true);
-            removeButton.setDisable(true);
-            vcpkgWorker.installPackage(vcpkgPackage, logTextArea);
-            installButton.setDisable(false);
-            removeButton.setDisable(false);
+            switchInstallAndRemoveButtons();
+            vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
             return null;
         }
     }
@@ -259,11 +272,8 @@ public class MainWindowController implements Initializable {
 
         @Override
         protected Void call() {
-            installButton.setDisable(true);
-            removeButton.setDisable(true);
-            vcpkgWorker.removePackage(vcpkgPackage, logTextArea);
-            installButton.setDisable(false);
-            removeButton.setDisable(false);
+            switchInstallAndRemoveButtons();
+            vcpkgWorker.removePackage(vcpkgPackage, logTextArea, statusLabel);
             return null;
         }
     }
@@ -293,9 +303,9 @@ public class MainWindowController implements Initializable {
                 }
             });
 
-            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
+            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("", statusLabel);
             setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
-            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
+            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("", statusLabel);
             setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
             return null;
         }
@@ -309,10 +319,10 @@ public class MainWindowController implements Initializable {
             String searchLine = searchInputTextField.getText();
             ArrayList<VcpkgPackage> searchPackages;
             if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 0) {
-                searchPackages = vcpkgWorker.searchInInstalledPackages(searchLine);
+                searchPackages = vcpkgWorker.searchInInstalledPackages(searchLine, statusLabel);
                 setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, searchPackages);
             } else {
-                searchPackages = vcpkgWorker.searchInAllPackages(searchLine);
+                searchPackages = vcpkgWorker.searchInAllPackages(searchLine, statusLabel);
                 setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, searchPackages);
             }
             searchButton.setDisable(false);
@@ -325,9 +335,9 @@ public class MainWindowController implements Initializable {
         @Override
         protected Void call() {
             refreshButton.setDisable(true);
-            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
+            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("", statusLabel);
             setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
-            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
+            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("", statusLabel);
             setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
             refreshButton.setDisable(false);
             return null;
