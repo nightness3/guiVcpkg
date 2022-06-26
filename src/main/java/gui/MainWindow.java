@@ -3,6 +3,7 @@ package gui;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class MainWindow extends Application {
@@ -13,6 +14,8 @@ public class MainWindow extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
+        Image image = new Image("/img/folder_icon.png");
+        primaryStage.getIcons().add(image);
         primaryStage.setTitle("vcpkgGUI");
         primaryStage.show();
     }

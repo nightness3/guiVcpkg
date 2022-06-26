@@ -2,6 +2,7 @@ package gui;
 
 import java.io.File;
 import java.net.URL;
+import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -97,18 +99,18 @@ public class MainWindowController implements Initializable {
 
     private FileChooser fileChooser = new FileChooser();
     private VcpkgWorker vcpkgWorker = new VcpkgWorker();
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Alert noPathToTheExecutableFileAlert = new Alert(Alert.AlertType.WARNING);
-        noPathToTheExecutableFileAlert.setTitle("No path warning");
-        noPathToTheExecutableFileAlert.setContentText("Please set path to the VCPKG.exe file");
+        pathInputTextField.setEditable(false);
+        logTextArea.setEditable(false);
 
         if(!VcpkgPathWorker.getPath().equals("")) {
             if ((new File(VcpkgPathWorker.getPath()).exists())) {
                 pathInputTextField.setText(VcpkgPathWorker.getPath());
-                //TODO: refactor into multithreading
-                initializeTables();
+                InitializeTask initializeTask = new InitializeTask();
+                executorService.submit(initializeTask);
             }
         }
 
@@ -124,43 +126,37 @@ public class MainWindowController implements Initializable {
                 }
             }
             File file = fileChooser.showOpenDialog(mainWindowPane.getScene().getWindow());
-            String vcpkgPath = file.getPath();
-            VcpkgPathWorker.setPath(vcpkgPath);
-            pathInputTextField.setText(vcpkgPath);
-        });
-
-        //TODO: refactor into multithreading
-        searchButton.setOnAction(event -> {
-            if (VcpkgPathWorker.getPath().equals("") || !(new File(VcpkgPathWorker.getPath()).exists())) {
-                noPathToTheExecutableFileAlert.showAndWait();
-            } else {
-                String searchLine = searchInputTextField.getText();
-                ArrayList<VcpkgPackage> searchPackages;
-                if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 0) {
-                    searchPackages = vcpkgWorker.searchInInstalledPackages(searchLine);
-                    setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, searchPackages);
-                } else {
-                    searchPackages = vcpkgWorker.searchInAllPackages(searchLine);
-                    setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, searchPackages);
-                }
+            if (file != null) {
+                String vcpkgPath = file.getPath();
+                VcpkgPathWorker.setPath(vcpkgPath);
+                pathInputTextField.setText(vcpkgPath);
             }
         });
 
-        //TODO: refactor into multithreading
+        searchButton.setOnAction(event -> {
+            if (VcpkgPathWorker.getPath().equals("") || !(new File(VcpkgPathWorker.getPath()).exists())) {
+                statusLabel.setTextFill(Color.RED);
+                statusLabel.setText("You must specify the path to vcpkg");
+            } else {
+                SearchTask searchTask = new SearchTask();
+                executorService.submit(searchTask);
+            }
+        });
+
         refreshButton.setOnAction(event -> {
             if (VcpkgPathWorker.getPath().equals("") || !(new File(VcpkgPathWorker.getPath()).exists())) {
-                noPathToTheExecutableFileAlert.showAndWait();
+                statusLabel.setTextFill(Color.RED);
+                statusLabel.setText("You must specify the path to vcpkg");
             } else {
-                ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
-                setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
-                ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
-                setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
+                RefreshTask refreshTask = new RefreshTask();
+                executorService.submit(refreshTask);
             }
         });
 
         installButton.setOnAction(event -> {
             if (VcpkgPathWorker.getPath().equals("") || !(new File(VcpkgPathWorker.getPath()).exists())) {
-                noPathToTheExecutableFileAlert.showAndWait();
+                statusLabel.setTextFill(Color.RED);
+                statusLabel.setText("You must specify the path to vcpkg");
             } else {
                 if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 1) {
                     InstallTask installTask = new InstallTask(allPackagesTableView.getSelectionModel().getSelectedItem(), logTextArea);
@@ -181,19 +177,18 @@ public class MainWindowController implements Initializable {
                         statusLabel.setText("FAILED");
                     });
                     installTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
-                    ExecutorService executorService
-                            = Executors.newFixedThreadPool(1);
-                    executorService.execute(installTask);
-                    executorService.shutdown();
+                    executorService.submit(installTask);
                 } else {
-                    //TODO: Dialog choose another tab
+                    statusLabel.setTextFill(Color.RED);
+                    statusLabel.setText("You should select the All tab");
                 }
             }
         });
 
         removeButton.setOnAction(event -> {
             if (VcpkgPathWorker.getPath().equals("") || !(new File(VcpkgPathWorker.getPath()).exists())) {
-                noPathToTheExecutableFileAlert.showAndWait();
+                statusLabel.setTextFill(Color.RED);
+                statusLabel.setText("You must specify the path to vcpkg");
             } else {
                 if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 0) {
                     RemoveTask removeTask = new RemoveTask(installedPackagesTableView.getSelectionModel().getSelectedItem(), logTextArea);
@@ -216,33 +211,13 @@ public class MainWindowController implements Initializable {
                     removeTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
                     ExecutorService executorService
                             = Executors.newFixedThreadPool(1);
-                    executorService.execute(removeTask);
-                    executorService.shutdown();
+                    executorService.submit(removeTask);
                 } else {
-                    //TODO: Dialog choose another tab
+                    statusLabel.setTextFill(Color.RED);
+                    statusLabel.setText("You should select the Installed tab");
                 }
             }
         });
-    }
-
-    private void initializeTables() {
-        allPackagesTableView.setOnMouseClicked(event -> {
-            VcpkgPackage vcpkgPackage = allPackagesTableView.getSelectionModel().getSelectedItem();
-            nameLabel.setText(vcpkgPackage.getPkgName());
-            versionLabel.setText(vcpkgPackage.getPkgVersion());
-            descriptionLabel.setText(vcpkgPackage.getPkgDescription());
-        });
-        installedPackagesTableView.setOnMouseClicked(event -> {
-            VcpkgPackage vcpkgPackage = installedPackagesTableView.getSelectionModel().getSelectedItem();
-            nameLabel.setText(vcpkgPackage.getPkgName());
-            versionLabel.setText(vcpkgPackage.getPkgVersion());
-            descriptionLabel.setText(vcpkgPackage.getPkgDescription());
-        });
-
-        ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
-        setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
-        ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
-        setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
     }
 
     private void setListInTable(TableView<VcpkgPackage> table, TableColumn<VcpkgPackage, String> firstTableColumn,
@@ -264,7 +239,11 @@ public class MainWindowController implements Initializable {
 
         @Override
         protected Void call() {
+            installButton.setDisable(true);
+            removeButton.setDisable(true);
             vcpkgWorker.installPackage(vcpkgPackage, logTextArea);
+            installButton.setDisable(false);
+            removeButton.setDisable(false);
             return null;
         }
     }
@@ -280,7 +259,77 @@ public class MainWindowController implements Initializable {
 
         @Override
         protected Void call() {
+            installButton.setDisable(true);
+            removeButton.setDisable(true);
             vcpkgWorker.removePackage(vcpkgPackage, logTextArea);
+            installButton.setDisable(false);
+            removeButton.setDisable(false);
+            return null;
+        }
+    }
+
+    public class InitializeTask extends Task<Void> {
+
+        @Override
+        protected Void call() {
+            allPackagesTableView.setOnMouseClicked(event -> {
+                try {
+                    VcpkgPackage vcpkgPackage = allPackagesTableView.getSelectionModel().getSelectedItem();
+                    nameLabel.setText(vcpkgPackage.getPkgName());
+                    versionLabel.setText(vcpkgPackage.getPkgVersion());
+                    descriptionLabel.setText(vcpkgPackage.getPkgDescription());
+                } catch (NullPointerException ignored) {
+
+                }
+            });
+            installedPackagesTableView.setOnMouseClicked(event -> {
+                try {
+                    VcpkgPackage vcpkgPackage = installedPackagesTableView.getSelectionModel().getSelectedItem();
+                    nameLabel.setText(vcpkgPackage.getPkgName());
+                    versionLabel.setText(vcpkgPackage.getPkgVersion());
+                    descriptionLabel.setText(vcpkgPackage.getPkgDescription());
+                } catch (NullPointerException ignored) {
+
+                }
+            });
+
+            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
+            setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
+            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
+            setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
+            return null;
+        }
+    }
+
+    public class SearchTask extends Task<Void> {
+
+        @Override
+        protected Void call() {
+            searchButton.setDisable(true);
+            String searchLine = searchInputTextField.getText();
+            ArrayList<VcpkgPackage> searchPackages;
+            if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 0) {
+                searchPackages = vcpkgWorker.searchInInstalledPackages(searchLine);
+                setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, searchPackages);
+            } else {
+                searchPackages = vcpkgWorker.searchInAllPackages(searchLine);
+                setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, searchPackages);
+            }
+            searchButton.setDisable(false);
+            return null;
+        }
+    }
+
+    public class RefreshTask extends Task<Void> {
+
+        @Override
+        protected Void call() {
+            refreshButton.setDisable(true);
+            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
+            setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
+            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
+            setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
+            refreshButton.setDisable(false);
             return null;
         }
     }

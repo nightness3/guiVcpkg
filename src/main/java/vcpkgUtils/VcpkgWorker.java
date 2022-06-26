@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.List;
 
 public class VcpkgWorker {
     private final ProcessWorker processWorker;
@@ -18,7 +17,7 @@ public class VcpkgWorker {
         this.packageWorker = new PackageWorker();
     }
 
-    public synchronized void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+    public void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         try {
             Process installPackageProcess = new ProcessBuilder().command(pathToVcpkg, "install", vcpkgPackage.getPkgName()).start();
@@ -34,7 +33,7 @@ public class VcpkgWorker {
         }
     }
 
-    public synchronized void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+    public void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         try {
             Process installPackageProcess = new ProcessBuilder().command(pathToVcpkg, "remove", vcpkgPackage.getPkgName(), "--recurse").start();
@@ -50,7 +49,7 @@ public class VcpkgWorker {
         }
     }
 
-    public synchronized ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine) {
+    public ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         ArrayList<VcpkgPackage> listOfPackages = new ArrayList<>();
         try {
@@ -63,7 +62,7 @@ public class VcpkgWorker {
         return listOfPackages;
     }
 
-    public synchronized ArrayList<VcpkgPackage> searchInAllPackages(String searchLine) {
+    public ArrayList<VcpkgPackage> searchInAllPackages(String searchLine) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         ArrayList<VcpkgPackage> listOfPackages = new ArrayList<>();
         try {
