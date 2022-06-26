@@ -1,7 +1,7 @@
 # guiVcpkg
 Graphical interface for vcpkg (package manager for C/C++)
 
-Find the package you need in the All tab, select it and click Install. After installation, the package will be displayed in the list of installed packages in the Installed tab.
+Find the package you need in the All tab, select it and click Install. After installation, the package will be displayed in the list of installed packages in the Installed tab. You can see the information about the package in the fields on the top left.
 
 Similarly, you can remove a package from the Installed tab using the Remove button.
 
