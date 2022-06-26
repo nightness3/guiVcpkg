@@ -147,6 +147,14 @@ public class MainWindowController implements Initializable {
             ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
             setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
         });
+
+        installButton.setOnAction(event -> {
+            //vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
+        });
+
+        removeButton.setOnAction(event -> {
+            //vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
+        });
     }
 
     private void initializeTables() {

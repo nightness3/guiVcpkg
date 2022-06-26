@@ -1,5 +1,8 @@
 package vcpkgUtils;
 
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -12,12 +15,12 @@ public class VcpkgWorker {
         this.packageWorker = new PackageWorker();
     }
 
-    public void installPackage() {
-
+    public void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea, Label statusLabel) {
+        //TODO: make install function
     }
 
-    public void removePackage() {
-
+    public void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea, Label statusLabel) {
+        //TODO: make remove function
     }
 
     public ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine) {
