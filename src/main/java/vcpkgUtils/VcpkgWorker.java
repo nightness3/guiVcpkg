@@ -3,7 +3,10 @@ package vcpkgUtils;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 
 public class VcpkgWorker {
@@ -15,15 +18,39 @@ public class VcpkgWorker {
         this.packageWorker = new PackageWorker();
     }
 
-    public void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea, Label statusLabel) {
-        //TODO: make install function
+    public synchronized void installPackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+        String pathToVcpkg = VcpkgPathWorker.getPath();
+        try {
+            Process installPackageProcess = new ProcessBuilder().command(pathToVcpkg, "install", vcpkgPackage.getPkgName()).start();
+            Reader readerFromVcpkg = new InputStreamReader(installPackageProcess.getInputStream());
+            BufferedReader bufferedReaderFromVcpkg = new BufferedReader(readerFromVcpkg);
+            String lineFromOutput;
+            while ((lineFromOutput = bufferedReaderFromVcpkg.readLine()) != null && !lineFromOutput.isEmpty()) {
+                logTextArea.appendText(lineFromOutput);
+                logTextArea.appendText("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea, Label statusLabel) {
-        //TODO: make remove function
+    public synchronized void removePackage(VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+        String pathToVcpkg = VcpkgPathWorker.getPath();
+        try {
+            Process installPackageProcess = new ProcessBuilder().command(pathToVcpkg, "remove", vcpkgPackage.getPkgName(), "--recurse").start();
+            Reader readerFromVcpkg = new InputStreamReader(installPackageProcess.getInputStream());
+            BufferedReader bufferedReaderFromVcpkg = new BufferedReader(readerFromVcpkg);
+            String lineFromOutput;
+            while ((lineFromOutput = bufferedReaderFromVcpkg.readLine()) != null && !lineFromOutput.isEmpty()) {
+                logTextArea.appendText(lineFromOutput);
+                logTextArea.appendText("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine) {
+    public synchronized ArrayList<VcpkgPackage> searchInInstalledPackages(String searchLine) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         ArrayList<VcpkgPackage> listOfPackages = new ArrayList<>();
         try {
@@ -36,7 +63,7 @@ public class VcpkgWorker {
         return listOfPackages;
     }
 
-    public ArrayList<VcpkgPackage> searchInAllPackages(String searchLine) {
+    public synchronized ArrayList<VcpkgPackage> searchInAllPackages(String searchLine) {
         String pathToVcpkg = VcpkgPathWorker.getPath();
         ArrayList<VcpkgPackage> listOfPackages = new ArrayList<>();
         try {

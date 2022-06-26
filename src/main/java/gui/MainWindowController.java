@@ -4,11 +4,12 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -20,8 +21,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import vcpkgUtils.VcpkgPackage;
 import vcpkgUtils.VcpkgPathWorker;
@@ -112,6 +113,7 @@ public class MainWindowController implements Initializable {
             }
         }
 
+        //TODO: refactor into multithreading
         initializeTables();
 
         chooseVcpkgButton.setOnAction(event -> {
@@ -129,6 +131,7 @@ public class MainWindowController implements Initializable {
             pathInputTextField.setText(vcpkgPath);
         });
 
+        //TODO: refactor into multithreading
         searchButton.setOnAction(event -> {
             String searchLine = searchInputTextField.getText();
             ArrayList<VcpkgPackage> searchPackages;
@@ -141,6 +144,7 @@ public class MainWindowController implements Initializable {
             }
         });
 
+        //TODO: refactor into multithreading
         refreshButton.setOnAction(event -> {
             ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
             setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
@@ -149,11 +153,61 @@ public class MainWindowController implements Initializable {
         });
 
         installButton.setOnAction(event -> {
-            //vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
+            if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 1) {
+                InstallTask installTask = new InstallTask(allPackagesTableView.getSelectionModel().getSelectedItem(), logTextArea);
+                installTask.setOnRunning(runEvent -> {
+                    statusLabel.setTextFill(Color.YELLOW);
+                    statusLabel.setText("INSTALLING");
+                });
+                installTask.setOnSucceeded(successEvent -> {
+                    statusLabel.setTextFill(Color.GREEN);
+                    statusLabel.setText("INSTALLED");
+                });
+                installTask.setOnCancelled(cancelEvent -> {
+                    statusLabel.setTextFill(Color.BLUE);
+                    statusLabel.setText("CANCELED");
+                });
+                installTask.setOnFailed(failEvent -> {
+                    statusLabel.setTextFill(Color.RED);
+                    statusLabel.setText("FAILED");
+                });
+                installTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
+                ExecutorService executorService
+                        = Executors.newFixedThreadPool(1);
+                executorService.execute(installTask);
+                executorService.shutdown();
+            } else {
+                //TODO: Dialog choose another tab
+            }
         });
 
         removeButton.setOnAction(event -> {
-            //vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
+            if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 0) {
+                RemoveTask removeTask = new RemoveTask(installedPackagesTableView.getSelectionModel().getSelectedItem(), logTextArea);
+                removeTask.setOnRunning(runEvent -> {
+                    statusLabel.setTextFill(Color.YELLOW);
+                    statusLabel.setText("REMOVING");
+                });
+                removeTask.setOnSucceeded(successEvent -> {
+                    statusLabel.setTextFill(Color.GREEN);
+                    statusLabel.setText("REMOVED");
+                });
+                removeTask.setOnCancelled(cancelEvent -> {
+                    statusLabel.setTextFill(Color.BLUE);
+                    statusLabel.setText("CANCELED");
+                });
+                removeTask.setOnFailed(failEvent -> {
+                    statusLabel.setTextFill(Color.RED);
+                    statusLabel.setText("FAILED");
+                });
+                removeTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
+                ExecutorService executorService
+                        = Executors.newFixedThreadPool(1);
+                executorService.execute(removeTask);
+                executorService.shutdown();
+            } else {
+                //TODO: Dialog choose another tab
+            }
         });
     }
 
@@ -183,5 +237,37 @@ public class MainWindowController implements Initializable {
         secondTableColumn.setCellValueFactory(new PropertyValueFactory<>("pkgVersion"));
         ObservableList<VcpkgPackage> observableListOfPackages = FXCollections.observableList(listOfPackages);
         table.setItems(observableListOfPackages);
+    }
+
+    public class InstallTask extends Task<Void> {
+        private final VcpkgPackage vcpkgPackage;
+        private final TextArea logTextArea;
+
+        public InstallTask (VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+            this.vcpkgPackage = vcpkgPackage;
+            this.logTextArea = logTextArea;
+        }
+
+        @Override
+        protected Void call() throws Exception {
+            vcpkgWorker.installPackage(vcpkgPackage, logTextArea);
+            return null;
+        }
+    }
+
+    public class RemoveTask extends Task<Void> {
+        private final VcpkgPackage vcpkgPackage;
+        private final TextArea logTextArea;
+
+        public RemoveTask (VcpkgPackage vcpkgPackage, TextArea logTextArea) {
+            this.vcpkgPackage = vcpkgPackage;
+            this.logTextArea = logTextArea;
+        }
+
+        @Override
+        protected Void call() throws Exception {
+            vcpkgWorker.removePackage(vcpkgPackage, logTextArea);
+            return null;
+        }
     }
 }
