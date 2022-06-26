@@ -7,6 +7,8 @@ import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -18,6 +20,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import vcpkgUtils.VcpkgPackage;
@@ -104,29 +107,21 @@ public class MainWindowController implements Initializable {
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
         if(!VcpkgPathWorker.getPath().equals("")) {
-            pathInputTextField.setText(VcpkgPathWorker.getPath());
+            if ((new File(VcpkgPathWorker.getPath()).exists())) {
+                pathInputTextField.setText(VcpkgPathWorker.getPath());
+            }
         }
 
-        allPackagesTableView.setOnMouseClicked(event -> {
-            VcpkgPackage vcpkgPackage = allPackagesTableView.getSelectionModel().getSelectedItem();
-            nameLabel.setText(vcpkgPackage.getPkgName());
-            versionLabel.setText(vcpkgPackage.getPkgVersion());
-            descriptionLabel.setText(vcpkgPackage.getPkgDescription());
-        });
-
-        ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.getSetOfAllPackages();
-
-        allPackagesNameColumn.setCellValueFactory(new PropertyValueFactory<VcpkgPackage, String>("pkgName"));
-        allPackagesVersionColumn.setCellValueFactory(new PropertyValueFactory<VcpkgPackage, String>("pkgVersion"));
-        ObservableList<VcpkgPackage> observableAllPackagesInitialize = FXCollections.observableList(allPackagesInitialize);
-        allPackagesTableView.setItems(observableAllPackagesInitialize);
+        initializeTables();
 
         chooseVcpkgButton.setOnAction(event -> {
             fileChooser.setTitle("Select vcpkg");
             FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select vcpkg.exe", "*.exe");
             fileChooser.getExtensionFilters().add(filter);
             if (!VcpkgPathWorker.getPath().equals("")) {
-                fileChooser.setInitialDirectory(new File(VcpkgPathWorker.getPath()));
+                if ((new File(VcpkgPathWorker.getPath())).exists()) {
+                    fileChooser.setInitialDirectory(new File(VcpkgPathWorker.getPath()));
+                }
             }
             File file = fileChooser.showOpenDialog(mainWindowPane.getScene().getWindow());
             String vcpkgPath = file.getPath();
@@ -134,6 +129,51 @@ public class MainWindowController implements Initializable {
             pathInputTextField.setText(vcpkgPath);
         });
 
+        searchButton.setOnAction(event -> {
+            String searchLine = searchInputTextField.getText();
+            ArrayList<VcpkgPackage> searchPackages;
+            if (choosePackagesTab.getSelectionModel().getSelectedIndex() == 0) {
+                searchPackages = vcpkgWorker.searchInInstalledPackages(searchLine);
+                setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, searchPackages);
+            } else {
+                searchPackages = vcpkgWorker.searchInAllPackages(searchLine);
+                setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, searchPackages);
+            }
+        });
+
+        refreshButton.setOnAction(event -> {
+            ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
+            setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
+            ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
+            setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
+        });
     }
 
+    private void initializeTables() {
+        allPackagesTableView.setOnMouseClicked(event -> {
+            VcpkgPackage vcpkgPackage = allPackagesTableView.getSelectionModel().getSelectedItem();
+            nameLabel.setText(vcpkgPackage.getPkgName());
+            versionLabel.setText(vcpkgPackage.getPkgVersion());
+            descriptionLabel.setText(vcpkgPackage.getPkgDescription());
+        });
+        installedPackagesTableView.setOnMouseClicked(event -> {
+            VcpkgPackage vcpkgPackage = installedPackagesTableView.getSelectionModel().getSelectedItem();
+            nameLabel.setText(vcpkgPackage.getPkgName());
+            versionLabel.setText(vcpkgPackage.getPkgVersion());
+            descriptionLabel.setText(vcpkgPackage.getPkgDescription());
+        });
+
+        ArrayList<VcpkgPackage> allPackagesInitialize = vcpkgWorker.searchInAllPackages("");
+        setListInTable(allPackagesTableView, allPackagesNameColumn, allPackagesVersionColumn, allPackagesInitialize);
+        ArrayList<VcpkgPackage> installedPackagesInitialize = vcpkgWorker.searchInInstalledPackages("");
+        setListInTable(installedPackagesTableView, installedPackagesNameColumn, installedPackagesVersionColumn, installedPackagesInitialize);
+    }
+
+    private void setListInTable(TableView<VcpkgPackage> table, TableColumn<VcpkgPackage, String> firstTableColumn,
+                                TableColumn<VcpkgPackage, String> secondTableColumn, ArrayList<VcpkgPackage> listOfPackages) {
+        firstTableColumn.setCellValueFactory(new PropertyValueFactory<>("pkgName"));
+        secondTableColumn.setCellValueFactory(new PropertyValueFactory<>("pkgVersion"));
+        ObservableList<VcpkgPackage> observableListOfPackages = FXCollections.observableList(listOfPackages);
+        table.setItems(observableListOfPackages);
+    }
 }
