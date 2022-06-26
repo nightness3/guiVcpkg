@@ -1,6 +1,5 @@
 package vcpkgUtils;
 
-import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
 import java.io.BufferedReader;
@@ -8,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.List;
 
 public class VcpkgWorker {
     private final ProcessWorker processWorker;
@@ -71,7 +71,7 @@ public class VcpkgWorker {
             ArrayList<String> listOfLinesFromOutput = processWorker.wrapProcessOutput(getAllPackagesProcess);
             listOfLinesFromOutput.remove(listOfLinesFromOutput.size()-1);
             listOfPackages = packageWorker.listToSetOfPackages(listOfLinesFromOutput, 40);
-        } catch (IOException e) {
+        } catch (IOException | ArrayIndexOutOfBoundsException e) {
             //TODO: Error dialog
         }
         return listOfPackages;
