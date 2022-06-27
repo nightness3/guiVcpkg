@@ -2,7 +2,6 @@ package gui;
 
 import java.io.File;
 import java.net.URL;
-import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +14,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -149,6 +147,15 @@ public class MainWindowController implements Initializable {
                 statusLabel.setText("You must specify the path to vcpkg");
             } else {
                 RefreshTask refreshTask = new RefreshTask();
+                refreshTask.setOnSucceeded(successEvent -> {
+                    removeButton.setDisable(false);
+                });
+                refreshTask.setOnCancelled(cancelEvent -> {
+                    removeButton.setDisable(false);
+                });
+                refreshTask.setOnFailed(failEvent -> {
+                    removeButton.setDisable(false);
+                });
                 executorService.submit(refreshTask);
             }
         });
@@ -256,6 +263,7 @@ public class MainWindowController implements Initializable {
         @Override
         protected Void call() {
             switchInstallAndRemoveButtons();
+            System.out.println("1");
             vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
             return null;
         }
