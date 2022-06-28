@@ -147,15 +147,6 @@ public class MainWindowController implements Initializable {
                 statusLabel.setText("You must specify the path to vcpkg");
             } else {
                 RefreshTask refreshTask = new RefreshTask();
-                refreshTask.setOnSucceeded(successEvent -> {
-                    removeButton.setDisable(false);
-                });
-                refreshTask.setOnCancelled(cancelEvent -> {
-                    removeButton.setDisable(false);
-                });
-                refreshTask.setOnFailed(failEvent -> {
-                    removeButton.setDisable(false);
-                });
                 executorService.submit(refreshTask);
             }
         });
@@ -222,8 +213,6 @@ public class MainWindowController implements Initializable {
                         switchInstallAndRemoveButtons();
                     });
                     removeTask.setOnScheduled(scheduleEvent -> statusLabel.setText("SCHEDULED"));
-                    ExecutorService executorService
-                            = Executors.newFixedThreadPool(1);
                     executorService.submit(removeTask);
                 } else {
                     statusLabel.setTextFill(Color.RED);
@@ -263,8 +252,7 @@ public class MainWindowController implements Initializable {
         @Override
         protected Void call() {
             switchInstallAndRemoveButtons();
-            System.out.println("1");
-            vcpkgWorker.installPackage(vcpkgPackage, logTextArea, statusLabel);
+            vcpkgWorker.installPackage(vcpkgPackage, logTextArea);
             return null;
         }
     }
@@ -281,7 +269,7 @@ public class MainWindowController implements Initializable {
         @Override
         protected Void call() {
             switchInstallAndRemoveButtons();
-            vcpkgWorker.removePackage(vcpkgPackage, logTextArea, statusLabel);
+            vcpkgWorker.removePackage(vcpkgPackage, logTextArea);
             return null;
         }
     }

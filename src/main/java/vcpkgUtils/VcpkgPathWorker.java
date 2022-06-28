@@ -13,7 +13,7 @@ public class VcpkgPathWorker {
 
     public static void setPath(String newVcpkgPath) {
         pathToVcpkg = newVcpkgPath;
-        pathNode.put("pathToVcpkg", pathToVcpkg);
+        pathNode.put("pathToVcpk", pathToVcpkg);
     }
 
 }

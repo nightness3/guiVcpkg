@@ -1,6 +1,8 @@
 package vcpkgUtils;
 
-import javafx.scene.control.Alert;
+import javafx.application.Platform;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ProcessWorker {
-    public ArrayList<String> wrapProcessOutput(Process process) throws IOException {
+    public ArrayList<String> wrapProcessOutput(Process process, Label statusLabel) throws IOException {
         ArrayList<String> wrappedLinesFromOutput = new ArrayList<>();
         Reader readerFromVcpkg = new InputStreamReader(process.getInputStream());
         BufferedReader bufferedReaderFromVcpkg = new BufferedReader(readerFromVcpkg);
@@ -31,12 +33,12 @@ public class ProcessWorker {
             }
         });
         try {
-            readFromBuffer.get(5, TimeUnit.SECONDS);
+            readFromBuffer.get(3000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
-            Alert timeOutReadingAlert = new Alert(Alert.AlertType.WARNING);
-            timeOutReadingAlert.setTitle("Time out");
-            timeOutReadingAlert.setContentText("The working time with the process is too long. You may have specified the executable file incorrectly.");
-            timeOutReadingAlert.showAndWait();
+            Platform.runLater(() -> {
+                statusLabel.setText("Exceeding the time of working");
+                statusLabel.setTextFill(Color.RED);
+            });
         }
         return wrappedLinesFromOutput;
     }
